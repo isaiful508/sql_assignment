@@ -1,4 +1,4 @@
--- Active: 1785962553536@@127.0.0.1@5432@bookstore_db
+
 CREATE TABLE books(
     id SERIAL PRIMARY KEY UNIQUE,
     title VARCHAR(255) NOT NULL,
@@ -31,7 +31,7 @@ INSERT INTO customer (name, email, joined_date) VALUES
 ('Bob', 'bob@example.com', '2023-01-16'),
 ('Charlie', 'charlie@example.com', '2023-01-17')
 
-SELECT * from customer;
+
 
 CREATE TABLE orders(
     id SERIAL PRIMARY KEY UNIQUE,
@@ -46,4 +46,37 @@ INSERT INTO orders (customer_id, book_id, quantity, order_date) VALUES
 (2, 1, 1, '2024-02-20'),
 (1, 3, 2, '2024-03-05')
 
-SELECT * from orders;
+select * from orders;
+
+SELECT title from books where stock = 0;
+    
+SELECT * from books where price = (SELECT max(price) from books);
+--  Find the total number of orders placed by each customer.
+
+SELECT c.name, COUNT(o.id) as total_orders
+FROM orders o
+JOIN customer c ON o.customer_id = c.id
+GROUP BY c.name;
+
+-- Calculate the total revenue generated from book sales.
+SELECT SUM(b.price * o.quantity) as total_revenue
+FROM orders o
+JOIN books b ON o.book_id = b.id;
+
+-- List all customers who have placed more than one order.
+SELECT c.name, COUNT(o.id) as order_count
+FROM orders o
+JOIN customer c ON o.customer_id = c.id
+GROUP BY c.name
+HAVING COUNT(o.id) > 1;
+
+-- Find the average price of books in the store.
+SELECT ROUND(AVG(b.price), 2) as avg_book_price
+FROM books b;
+
+-- Increase the price of all books published before 2000 by 10%.
+UPDATE books
+SET price = price * 1.10
+WHERE published_year < '2000-01-01';
+
+DELETE from customer as c where c.id NOT IN (SELECT customer_id from orders);
